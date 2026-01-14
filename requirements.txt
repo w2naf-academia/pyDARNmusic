@@ -1,4 +1,4 @@
-pygeos
+shapely>=2.0
 Cartopy
 tqdm
 geos
