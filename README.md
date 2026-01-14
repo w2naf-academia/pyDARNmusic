@@ -4,6 +4,7 @@
 
 A Python library implementing the MUSIC algorithm for detecting and characterizing Medium-Scale Traveling Ionospheric Disturbances (MSTIDs) using SuperDARN radar data. This package enables **single-event analysis** of MSTID wave properties and provides the core signal processing capabilities that power the [DARNtids](https://github.com/w2naf-academia/DARNtids) multi-event analysis pipeline.
 
+[![PyPI version](https://badge.fury.io/py/pyDARNmusic.svg)](https://badge.fury.io/py/pyDARNmusic)
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 
@@ -109,43 +110,41 @@ SuperDARN radars observe MSTIDs as wave-like patterns in ground scatter. Ionosph
   - Access via [SuperDARN Data Portal](http://superdarn.thayer.dartmouth.edu/data.html)
   - Or institutional mirror sites
 
-### Option 1: Using Conda/Mamba (Recommended)
+### Option 1: Install from PyPI (Recommended)
+
+```bash
+pip install pyDARNmusic
+```
+
+### Option 2: Install from source
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/w2naf-academia/pyDARNmusic.git
+git clone https://github.com/w2naf/pyDARNmusic.git
+cd pyDARNmusic
+```
+
+2. Install the package:
+```bash
+pip install -e .
+```
+
+### Option 3: Using Conda environment
+
+1. Clone the repository:
+```bash
+git clone https://github.com/w2naf/pyDARNmusic.git
 cd pyDARNmusic
 ```
 
 2. Create and activate a conda environment:
 ```bash
-conda create -n pyDARNmusic python=3.8
+conda create -n pyDARNmusic python=3.11
 conda activate pyDARNmusic
-```
-
-3. Install dependencies and package:
-```bash
-pip install -r requirements.txt
-pip install -e .
-```
-
-### Option 2: Using pip only
-
-1. Clone the repository:
-```bash
-git clone https://github.com/w2naf-academia/pyDARNmusic.git
-cd pyDARNmusic
-```
-
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 3. Install the package:
 ```bash
-pip install -r requirements.txt
 pip install -e .
 ```
 
