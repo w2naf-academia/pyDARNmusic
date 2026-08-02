@@ -39,7 +39,6 @@ Functions
 getDataSet                  get music data object from music array object
 stringify_signal            convert dictionary to a string
 stringify_signal_list       convert list of dictionaries into strings
-boxcarFilter                apply a boxcar filter (i.e., https://doi.org/10.1029/2011RS004676)
 beamInterpolation           interpolate music array object along beams
 defineLimits                set limits for chosen data set
 checkDataQuality            mark data as bad based on radar operations
@@ -216,36 +215,6 @@ def stringify_signal_list(signal_list,sort_key='order'):
             string_info.append(stringify_signal(sig))
 
     return string_info
-
-def boxcarFilter(dataObj,dataSet='active',size=3,mode='constant',
-        newDataSetName='boxcarFiltered',comment='Boxcar (Median) Filter'):
-    """
-    Apply a boxcar (median) filter like the one in https://doi.org/10.1029/2011RS004676 
-    to remove salt-and-pepper noise.
-    The result is stored as a new musicDataObj in the given musicArray object.
-
-    Parameters
-    ----------
-    dataObj : musicArray
-        musicArray object
-    dataSet : Optional[str]
-        which dataSet in the musicArray object to process
-    newDataSetName : Optional[str]
-        Name of the new musicDataObj to be created in the current musicArray object as a result of this processing.
-    comment : Optional[str]
-        String to be appended to the history of this object.
-
-    Written by Nathaniel A. Frissell, Spring 2023
-    """
-    from scipy.ndimage import median_filter
-    currentData = getDataSet(dataObj,dataSet)
-
-    newArr  = median_filter(currentData.data, size=size, mode=mode)
-
-    comment = comment + ' (Size: {!s}, Mode: {!s})'.format(size,mode)
-    newDataSet = currentData.copy(newDataSetName,comment)
-    newDataSet.data = newArr
-    newDataSet.setActive()
 
 def beamInterpolation(dataObj,dataSet='active',newDataSetName='beamInterpolated',comment='Beam Linear Interpolation'):
     """Interpolates the data in a musicArray object along the beams of the radar.  This method will ensure that no
