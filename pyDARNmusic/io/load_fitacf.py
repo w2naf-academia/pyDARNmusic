@@ -12,13 +12,40 @@ import numpy as np
 import pydarnio
 from pydarn import time2datetime
 
-def load_fitacf(radar,sTime,eTime=None,data_dir='/sd-data',fit_sfx='fitacf'):
+def load_fitacf(radar,sTime,eTime=None,data_dir='/sd-data',fit_sfx='fitacf',on_corrupt='skip'):
     """
     Load FITACF data from multiple FITACF files by specifying a date range.
 
     This routine assumes bz2 compression.
+
+    Parameters
+    ----------
+    radar : str
+        Three-letter radar code, e.g. 'bks'.
+    sTime : datetime.datetime
+        Start of the requested window.
+    eTime : datetime.datetime, optional
+        End of the requested window. Defaults to sTime + 1 day.
+    data_dir : str
+        Root of the FITACF tree, laid out as <data_dir>/<year>/<fit_sfx>/<radar>/.
+    fit_sfx : str
+        FITACF flavor suffix, e.g. 'fitacf' or 'fitexfilter.fitacf'.
+    on_corrupt : {'skip', 'keep'}
+        What to do with a file that pydarnio reports as corrupt or truncated.
+        'skip' (default) discards the whole file, matching the behavior of
+        pydarnio 1.x, where a corrupt record raised and the file was dropped.
+        This is the setting that reproduces previously published results.
+        'keep' retains the records that parsed cleanly before the corruption.
+        Either way the corruption is logged with its byte offset.
+
+    Returns
+    -------
+    list of dict
+        FITACF records falling within [sTime, eTime).
     """
-    
+    if on_corrupt not in ('skip','keep'):
+        raise ValueError("on_corrupt must be 'skip' or 'keep', got {!r}".format(on_corrupt))
+
     if eTime is None:
         eTime = sTime + datetime.timedelta(days=1)
 
@@ -80,19 +107,36 @@ def load_fitacf(radar,sTime,eTime=None,data_dir='/sd-data',fit_sfx='fitacf'):
             logging.warning(msg)
             continue
 
+        # pydarnio 2.0 replaced the class-based SDarnRead with module-level
+        # readers. In 'lax' mode it reports corruption by returning the byte
+        # index where parsing stopped, where 1.x raised; the guards below turn
+        # that back into the skip-the-file behavior 1.x provided, and log the
+        # offset, which 1.x did not report.
         try:
-            reader  = pydarnio.SDarnRead(fitacf_stream, True)
-        except pydarnio.exceptions.dmap_exceptions.EmptyFileError:
-            msg = '{!s} EmptyFileError: {!s}'.format(datetime.datetime.now(),fitacf_path)
+            records, corruption_idx = pydarnio.read_fitacf(fitacf_stream, mode='lax')
+        except OSError:
+            # 'failed to fill whole buffer'; the 2.0 stand-in for 1.x EmptyFileError.
+            msg = '{!s} Empty or unreadable FITACF file: {!s}'.format(datetime.datetime.now(),fitacf_path)
             logging.warning(msg)
             continue # Skip fitacf file if empty.
-
-        try:
-            records = reader.read_fitacf()
-        except:
-            msg = '{!s} pydarnio.SDarnRead.read_fitacf() Error: {!s}'.format(datetime.datetime.now(),fitacf_path)
+        except Exception:
+            msg = '{!s} pydarnio.read_fitacf() Error: {!s}'.format(datetime.datetime.now(),fitacf_path)
             logging.warning(msg)
             continue
+
+        if len(records) == 0:
+            # Nothing parsed at all, e.g. a file that is not DMAP. 1.x raised here.
+            msg = '{!s} No FITACF records parsed (corruption at byte {!s}): {!s}'.format(datetime.datetime.now(),corruption_idx,fitacf_path)
+            logging.warning(msg)
+            continue
+
+        if corruption_idx is not None:
+            msg = '{!s} FITACF corruption at byte {!s} after {!s} records ({!s}): {!s}'.format(
+                    datetime.datetime.now(),corruption_idx,len(records),on_corrupt,fitacf_path)
+            logging.warning(msg)
+            if on_corrupt == 'skip':
+                continue
+
         fitacf += records
 
     # Remove uneeded fitacf records.

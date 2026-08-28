@@ -5,7 +5,7 @@ geos
 aacgmv2
 matplotlib
 numpy
-pydarnio
+pydarnio>=2.0
 pydarn
 pycurl
 scikit-image
