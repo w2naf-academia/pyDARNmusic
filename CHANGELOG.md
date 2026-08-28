@@ -24,7 +24,14 @@ major version is `0`, breaking changes increment the **minor** version.
   silently changed a corrupt file from "dropped" under 1.x to "partially loaded". `'skip'`
   restores the 1.x behavior and is the setting that reproduces previously published results;
   `'keep'` retains the records that parsed before the corruption. Both log the byte offset,
-  which pydarnio 1.x did not report.
+  which pydarnio 1.x did not report. The docstring Notes explain why `'skip'` is the default
+  and why `'keep'` recovers little: `checkDataQuality()` rejects any window containing a gap
+  longer than `max_off_time` (10 min), and FITACF files and MSTID windows are both 2 h, so a
+  file truncated much before its end loses its window either way.
+- **`scripts/scan_fitacf_corruption.py`**, which measures an archive's corruption rate and
+  what `'keep'` would recover. On `/data/sd-data_fitexfilter`, a 2,000-file sample across ten
+  North American radars and the 2010--2021 NH winters (population 238,997) read 1,995 clean,
+  5 empty, and 0 partially corrupt.
 - **`tests/`**, covering the read path and the pydarnio API surface this package depends on.
   There was previously no test directory, and therefore nothing to catch the pydarnio 2.0
   break at install time. The tests read the committed `TestData/` FITACF tree and skip when
