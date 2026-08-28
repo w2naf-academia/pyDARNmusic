@@ -49,7 +49,7 @@ dependencies = [
     "aacgmv2",
     "matplotlib",
     "numpy",
-    "pydarnio",
+    "pydarnio>=2.0",
     "pydarn",
     "scikit-image",
 ]
@@ -73,3 +73,6 @@ include = ["pyDARNmusic*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.json", "*.dat"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
